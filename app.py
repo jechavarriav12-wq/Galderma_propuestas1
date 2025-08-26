@@ -241,26 +241,55 @@ def generar_carta_pdf(data):
     c.line(margin, y, width - margin, y)
     y -= 30
 
-    # Firmas
-    y -= 70
+    # Firmas - 4 firmas en grid 2x2
+    y -= 50
     ancho_disponible = width - 2 * margin
-    x_firma_izq = margin + 20
-    x_firma_der = margin + ancho_disponible / 2 + 20
-    line_y = y
-    label_y = line_y - 18
-    name_y = label_y - 15
-    org_y = name_y - 15
-
-    c.setFont("Helvetica", 11)
-    c.drawString(x_firma_izq, line_y, "_________________________")
-    c.drawString(x_firma_izq, label_y, "Ejecutiva Comercial:")
-    c.drawString(x_firma_izq, name_y, f"{data['Representante']}")
-    c.drawString(x_firma_izq, org_y, "Galderma")
-
-    c.drawString(x_firma_der, line_y, "_________________________")
-    c.drawString(x_firma_der, label_y, "Cliente:")
-    c.drawString(x_firma_der, name_y, f"Dr(a). {data['Cliente']}")
-    c.drawString(x_firma_der, org_y, "Firma y Sello")
+    col_width = ancho_disponible / 2
+    row_height = 80
+    
+    # Coordenadas para las 4 firmas
+    firmas = [
+        {
+            'x': margin + 20,
+            'y': y,
+            'cargo': "Ejecutiva Comercial:",
+            'nombre': data['Representante'],
+            'empresa': "Galderma"
+        },
+        {
+            'x': margin + col_width + 20,
+            'y': y,
+            'cargo': "Líder Comercial:",
+            'nombre': "____________________",
+            'empresa': "Galderma"
+        },
+        {
+            'x': margin + 20,
+            'y': y - row_height,
+            'cargo': "Analista Comercial:",
+            'nombre': "____________________",
+            'empresa': "Galderma"
+        },
+        {
+            'x': margin + col_width + 20,
+            'y': y - row_height,
+            'cargo': "Cliente:",
+            'nombre': f"Dr(a). {data['Cliente']}",
+            'empresa': "Firma y Sello"
+        }
+    ]
+    
+    c.setFont("Helvetica", 10)
+    for firma in firmas:
+        line_y = firma['y']
+        label_y = line_y - 18
+        name_y = label_y - 15
+        org_y = name_y - 15
+        
+        c.drawString(firma['x'], line_y, "_________________________")
+        c.drawString(firma['x'], label_y, firma['cargo'])
+        c.drawString(firma['x'], name_y, firma['nombre'])
+        c.drawString(firma['x'], org_y, firma['empresa'])
 
     c.save()
     buffer.seek(0)
@@ -275,7 +304,7 @@ def formulario():
 
 @app.route('/generar-pdf', methods=['POST'])
 def generar_pdf():
-    """Generar y descargar PDF automáticamente"""
+    """Generar PDF y mostrar página de confirmación"""
     try:
         fecha_actual = datetime.today().strftime('%d/%m/%Y')
         
@@ -298,7 +327,8 @@ def generar_pdf():
 
         # Validar que hay al menos un producto
         if sculptra_unidades == 0 and restylane_unidades == 0 and skinboosters_unidades == 0:
-            return jsonify({"error": "Debe ingresar al menos un producto con unidades mayor a 0"}), 400
+            return render_template('error.html', 
+                                 error="Debe ingresar al menos un producto con unidades mayor a 0"), 400
 
         data = {
             'Representante': representante,
@@ -318,8 +348,53 @@ def generar_pdf():
         # Generar PDF en memoria
         pdf_buffer = generar_carta_pdf(data)
         
-        # Nombre del archivo
+        # Guardar PDF temporalmente para la descarga
         filename = f"Propuesta_Galderma_{cliente}_{datetime.today().strftime('%Y%m%d')}.pdf"
+        
+        # Renderizar página de confirmación con datos para descarga
+        return render_template('confirmacion.html', 
+                             cliente=cliente,
+                             representante=representante,
+                             fecha_actual=fecha_actual,
+                             filename=filename,
+                             productos={
+                                 'sculptra': sculptra_unidades,
+                                 'restylane': restylane_unidades,
+                                 'skinboosters': skinboosters_unidades
+                             },
+                             cross_selling=cross_selling)
+        
+    except Exception as e:
+        return render_template('error.html', 
+                             error=f"Error generando PDF: {str(e)}"), 500
+
+@app.route('/descargar-pdf', methods=['POST'])
+def descargar_pdf():
+    """Descargar el PDF generado"""
+    try:
+        # Recrear el PDF con los mismos datos del formulario
+        fecha_actual = datetime.today().strftime('%d/%m/%Y')
+        
+        data = {
+            'Representante': request.form.get('representante', ''),
+            'Cliente': request.form.get('cliente', ''),
+            'Sculptra Unidades': int(request.form.get('sculptra_unidades', 0)),
+            'Sculptra Descuento': int(request.form.get('sculptra_descuento', 0)),
+            'Skinboosters Unidades': int(request.form.get('skinboosters_unidades', 0)),
+            'Skinboosters Descuento': int(request.form.get('skinboosters_descuento', 0)),
+            'Restylane Unidades': int(request.form.get('restylane_unidades', 0)),
+            'Restylane Descuento': int(request.form.get('restylane_descuento', 0)),
+            'Cross-selling': request.form.get('cross_selling', 'No'),
+            'Fecha inicio': request.form.get('fecha_inicio', ''),
+            'Fecha finalizacion': request.form.get('fecha_finalizacion', ''),
+            'Fecha actual': fecha_actual
+        }
+
+        # Generar PDF
+        pdf_buffer = generar_carta_pdf(data)
+        
+        # Nombre del archivo
+        filename = request.form.get('filename', 'Propuesta_Galderma.pdf')
         
         return send_file(
             pdf_buffer,
@@ -329,7 +404,8 @@ def generar_pdf():
         )
         
     except Exception as e:
-        return jsonify({"error": f"Error generando PDF: {str(e)}"}), 500
+        return render_template('error.html', 
+                             error=f"Error descargando PDF: {str(e)}"), 500
 
 @app.route('/health')
 def health():
