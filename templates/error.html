@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Galderma</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .main-container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 0 20px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-card {
+            background-color: #ffffff;
+            border: 2px solid #dc3545;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: white;
+        }
+
+        .error-title {
+            font-size: 28px;
+            color: #dc3545;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .error-details {
+            font-size: 14px;
+            color: #dc3545;
+            font-family: monospace;
+            background-color: #fff5f5;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            border: 2px solid;
+        }
+
+        .btn-primary {
+            background-color: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .btn-primary:hover {
+            background-color: #333333;
+            border-color: #333333;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #000000;
+            border-color: #000000;
+        }
+
+        .btn-secondary:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 30px 20px;
+            color: #666666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 40px auto;
+                padding: 0 15px;
+            }
+
+            .error-card {
+                padding: 25px;
+            }
+
+            .error-title {
+                font-size: 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-text">Galderma</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="error-card">
+            <div class="error-icon">!</div>
+            <h1 class="error-title">Error al Generar la Propuesta</h1>
+            <div class="error-message">
+                Lo sentimos, ha ocurrido un error al procesar su solicitud. Por favor, revise los datos ingresados e intente nuevamente.
+            </div>
+            {% if error %}
+            <div class="error-details">
+                <strong>Detalles técnicos:</strong><br>
+                {{ error }}
+            </div>
+            {% endif %}
+            <div class="action-buttons">
+                <a href="javascript:history.back()" class="btn btn-primary">Volver e Intentar Nuevamente</a>
+                <a href="/" class="btn btn-secondary">Nueva Propuesta</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 Galderma. Advanced Dermatology Solutions.</p>
+    </footer>
+</body>
+</html>
