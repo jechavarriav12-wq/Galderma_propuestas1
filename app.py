@@ -5,9 +5,86 @@ from reportlab.pdfgen import canvas
 from datetime import datetime
 import tempfile
 import io
+import pandas as pd
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_temporal_123')
+
+# Archivo Excel para registro
+EXCEL_FILE = 'negociaciones.xlsx'
+
+def validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades):
+    """
+    Valida si aplica cross-selling según las reglas de negocio:
+    - Debe haber compra en las 3 franquicias
+    - Skinboosters debe ser al menos la mitad de la franquicia mayor (Sculptra o Restylane)
+    """
+    # Si alguna franquicia está en 0, no hay cross-selling
+    if sculptra_unidades == 0 or restylane_unidades == 0 or skinboosters_unidades == 0:
+        return False
+    
+    # Determinar la franquicia mayor entre Sculptra y Restylane
+    franquicia_mayor = max(sculptra_unidades, restylane_unidades)
+    
+    # Skinboosters debe ser al menos la mitad de la franquicia mayor
+    minimo_skinboosters = franquicia_mayor / 2
+    
+    return skinboosters_unidades >= minimo_skinboosters
+    """Inicializa el archivo Excel si no existe"""
+    if not os.path.exists(EXCEL_FILE):
+        df = pd.DataFrame(columns=[
+            'ID', 'Fecha', 'Cliente', 'Codigo_Cliente', 'Representante',
+            'Sculptra_Unidades', 'Sculptra_Descuento',
+            'Restylane_Unidades', 'Restylane_Descuento',
+            'Skinboosters_Unidades', 'Skinboosters_Descuento',
+            'Cross_Selling', 'Fecha_Inicio', 'Fecha_Finalizacion',
+            'PDF_Generado'
+        ])
+        df.to_excel(EXCEL_FILE, index=False)
+
+def registrar_negociacion(data):
+    """Registra una nueva negociación en Excel"""
+    try:
+        inicializar_excel()
+        
+        # Crear ID único
+        negociacion_id = str(uuid.uuid4())[:8]
+        
+        nueva_fila = {
+            'ID': negociacion_id,
+            'Fecha': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'Cliente': data.get('Cliente', ''),
+            'Codigo_Cliente': data.get('Codigo_Cliente', ''),
+            'Representante': data.get('Representante', ''),
+            'Sculptra_Unidades': data.get('Sculptra Unidades', 0),
+            'Sculptra_Descuento': data.get('Sculptra Descuento', 0),
+            'Restylane_Unidades': data.get('Restylane Unidades', 0),
+            'Restylane_Descuento': data.get('Restylane Descuento', 0),
+            'Skinboosters_Unidades': data.get('Skinboosters Unidades', 0),
+            'Skinboosters_Descuento': data.get('Skinboosters Descuento', 0),
+            'Cross_Selling': data.get('Cross-selling', 'No'),
+            'Fecha_Inicio': data.get('Fecha inicio', ''),
+            'Fecha_Finalizacion': data.get('Fecha finalizacion', ''),
+            'PDF_Generado': 'Sí'
+        }
+        
+        # Leer Excel existente
+        df_existente = pd.read_excel(EXCEL_FILE)
+        
+        # Agregar nueva fila
+        df_nueva = pd.DataFrame([nueva_fila])
+        df_final = pd.concat([df_existente, df_nueva], ignore_index=True)
+        
+        # Guardar Excel actualizado
+        df_final.to_excel(EXCEL_FILE, index=False)
+        
+        print(f"Negociación registrada: {negociacion_id}")
+        return negociacion_id
+        
+    except Exception as e:
+        print(f"Error registrando negociación: {e}")
+        return None
 
 def calcular_descuento(producto, unidades):
     """Calcula el descuento basado en el producto y la cantidad de unidades"""
@@ -320,16 +397,25 @@ def generar_pdf():
         restylane_unidades = int(request.form.get('restylane_unidades', 0) or 0)
         skinboosters_unidades = int(request.form.get('skinboosters_unidades', 0) or 0)
         
+        # Validar unidades mínimas
+        if (sculptra_unidades > 0 and sculptra_unidades < 2) or \
+           (restylane_unidades > 0 and restylane_unidades < 2) or \
+           (skinboosters_unidades > 0 and skinboosters_unidades < 2):
+            return render_template('error.html', 
+                                 error="Todos los productos deben tener mínimo 2 unidades o estar en 0"), 400
+
+        # Validar que hay al menos un producto con mínimo 2 unidades
+        if sculptra_unidades < 2 and restylane_unidades < 2 and skinboosters_unidades < 2:
+            return render_template('error.html', 
+                                 error="Debe ingresar al menos un producto con mínimo 2 unidades"), 400
+
         sculptra_descuento = calcular_descuento_porcentaje('sculptra', sculptra_unidades)
         restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
         skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
         
-        cross_selling = 'Sí' if request.form.get('cross_selling') else 'No'
-
-        # Validar que hay al menos un producto
-        if sculptra_unidades == 0 and restylane_unidades == 0 and skinboosters_unidades == 0:
-            return render_template('error.html', 
-                                 error="Debe ingresar al menos un producto con unidades mayor a 0"), 400
+        # Determinar cross-selling automáticamente (ignorar checkbox)
+        cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
+        cross_selling = 'Sí' if cross_selling_aplica else 'No'
 
         data = {
             'Representante': representante,
@@ -349,6 +435,9 @@ def generar_pdf():
 
         # Generar PDF en memoria
         pdf_buffer = generar_carta_pdf(data)
+        
+        # Registrar negociación en Excel
+        negociacion_id = registrar_negociacion(data)
         
         # Guardar PDF temporalmente para la descarga
         filename = f"Propuesta_Galderma_{cliente}_{datetime.today().strftime('%Y%m%d')}.pdf"
@@ -395,7 +484,9 @@ def descargar_pdf():
         restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
         skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
         
-        cross_selling = request.form.get('cross_selling', 'No')
+        # Determinar cross-selling automáticamente
+        cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
+        cross_selling = 'Sí' if cross_selling_aplica else 'No'
         
         data = {
             'Representante': representante,
@@ -430,10 +521,49 @@ def descargar_pdf():
         return render_template('error.html', 
                              error=f"Error descargando PDF: {str(e)}"), 500
 
-@app.route('/health')
-def health():
-    """Endpoint de salud para Render"""
-    return jsonify({"status": "OK", "message": "App funcionando correctamente"})
+@app.route('/descargar-excel')
+def descargar_excel():
+    """Descargar Excel con todas las negociaciones"""
+    try:
+        if not os.path.exists(EXCEL_FILE):
+            inicializar_excel()
+        
+        return send_file(
+            EXCEL_FILE,
+            as_attachment=True,
+            download_name=f'negociaciones_galderma_{datetime.today().strftime("%Y%m%d")}.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        return jsonify({"error": f"Error descargando Excel: {str(e)}"}), 500
+
+@app.route('/estadisticas')
+def ver_estadisticas():
+    """Ver estadísticas básicas de negociaciones"""
+    try:
+        if not os.path.exists(EXCEL_FILE):
+            return jsonify({
+                "total_negociaciones": 0,
+                "mensaje": "No hay negociaciones registradas"
+            })
+        
+        df = pd.read_excel(EXCEL_FILE)
+        
+        estadisticas = {
+            "total_negociaciones": len(df),
+            "representantes_activos": df['Representante'].nunique(),
+            "productos_mas_vendidos": {
+                "sculptra": df['Sculptra_Unidades'].sum(),
+                "restylane": df['Restylane_Unidades'].sum(),
+                "skinboosters": df['Skinboosters_Unidades'].sum()
+            },
+            "cross_selling_rate": f"{(df['Cross_Selling'] == 'Sí').mean() * 100:.1f}%"
+        }
+        
+        return jsonify(estadisticas)
+        
+    except Exception as e:
+        return jsonify({"error": f"Error generando estadísticas: {str(e)}"}), 500
 
 if __name__ == '__main__':
     # Para desarrollo local
@@ -444,3 +574,4 @@ else:
 
 # Para que Gunicorn funcione
 application = app
+
