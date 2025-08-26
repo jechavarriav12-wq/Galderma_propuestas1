@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Comercial - Galderma</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .tagline {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+            font-weight: 300;
+        }
+
+        /* Container principal adaptativo */
+        .main-container {
+            max-width: 900px; /* Más ancho para desktop */
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #000000;
+            font-size: 24px;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* DESKTOP: Grid de 2 columnas para secciones */
+        .form-sections-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* MÓVIL: Una columna */
+        @media (max-width: 768px) {
+            .form-sections-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* Secciones del formulario */
+        .form-section {
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* DESKTOP: Secciones siempre expandidas */
+        .section-header {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 15px 20px;
+            cursor: default;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-content {
+            padding: 25px;
+            display: block;
+        }
+
+        /* MÓVIL: Secciones colapsables */
+        @media (max-width: 768px) {
+            .section-header {
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                user-select: none;
+            }
+
+            .section-toggle {
+                font-size: 16px;
+                transition: transform 0.3s ease;
+                display: inline-block;
+            }
+
+            .section-content.collapsed {
+                display: none;
+            }
+
+            .section-header.active .section-toggle {
+                transform: rotate(180deg);
+            }
+
+            .section-content {
+                padding: 20px;
+            }
+        }
+
+        /* DESKTOP: Ocultar toggle */
+        .section-toggle {
+            display: none;
+        }
+
+        /* Campos del formulario */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #000000;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #000000;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            color: #000000;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        /* MÓVIL: Inputs más grandes para touch */
+        @media (max-width: 768px) {
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            input[type="date"] {
+                padding: 16px 12px;
+                font-size: 16px; /* Evita zoom en iOS */
+                border-radius: 8px;
+                border-width: 2px;
+            }
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            border-color: #000000;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+        }
+
+        /* Productos: Grid en desktop, stack en móvil */
+        .products-container {
+            grid-column: 1 / -1; /* Ocupa toda la fila en grid */
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .products-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #000000;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .product-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #000000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .product-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .descuento-info {
+            font-size: 12px;
+            color: #666666;
+            margin-top: 8px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        .descuento-display {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 10px 12px;
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Cross-selling */
+        .checkbox-container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .checkbox-container label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 0;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            accent-color: #000000;
+            cursor: pointer;
+        }
+
+        /* MÓVIL: Checkbox más grande */
+        @media (max-width: 768px) {
+            .checkbox-container input[type="checkbox"] {
+                width: 24px;
+                height: 24px;
+                margin-right: 15px;
+            }
+
+            .checkbox-container label {
+                font-size: 16px;
+            }
+        }
+
+        /* Botón principal */
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        /* MÓVIL: Botón más grande */
+        @media (max-width: 768px) {
+            .submit-button {
+                padding: 20px;
+                font-size: 18px;
+                border-radius: 8px;
+                margin-top: 30px;
+            }
+        }
+
+        .submit-button:hover {
+            background-color: #333333;
+        }
+
+        .submit-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Loading state */
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #000000;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 40px;
+        }
+
+        /* Validación visual */
+        .form-group.error input {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 500;
+            padding: 8px;
+            background-color: #fff5f5;
+            border-radius: 4px;
+            border-left: 3px solid #dc3545;
+        }
+
+        /* Progress indicator solo móvil */
+        .progress-steps {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .progress-steps {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 20px;
+                padding: 0 10px;
+            }
+
+            .step {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #e0e0e0;
+                margin: 0 4px;
+                transition: background-color 0.3s ease;
+            }
+
+            .step.active {
+                background-color: #000000;
+            }
+        }
+
+        /* Responsive específico */
+        @media (max-width: 768px) {
+            .main-container {
+                max-width: 100%;
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .form-container {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            .logo-text {
+                font-size: 24px;
+                letter-spacing: 2px;
+            }
+
+            .tagline {
+                font-size: 12px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 15px;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header corporativo -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-text">Galderma</div>
+            <div class="tagline">Advanced Dermatology Solutions</div>
+        </div>
+    </header>
+
+    <!-- Progress indicator (solo móvil) -->
+    <div class="progress-steps">
+        <div class="step active"></div>
+        <div class="step"></div>
+        <div class="step"></div>
+        <div class="step"></div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="main-container">
+        <div class="form-container">
+            <h1>Generar Propuesta Comercial</h1>
+            
+            <form action="/generar-pdf" method="POST" id="proposalForm">
+                <!-- Grid de secciones (2 columnas en desktop) -->
+                <div class="form-sections-grid">
+                    <!-- Información del representante -->
+                    <div class="form-section">
+                        <div class="section-header" onclick="toggleSection(this)">
+                            <span class="section-title">Representante</span>
+                            <span class="section-toggle">▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label>Representante <span class="required">*</span></label>
+                                <input type="text" name="representante" required 
+                                       placeholder="Nombre completo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del cliente -->
+                    <div class="form-section">
+                        <div class="section-header" onclick="toggleSection(this)">
+                            <span class="section-title">Cliente</span>
+                            <span class="section-toggle">▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label>Cliente <span class="required">*</span></label>
+                                <input type="text" name="cliente" required 
+                                       placeholder="Dr(a). Nombre completo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Período de la propuesta -->
+                    <div class="form-section">
+                        <div class="section-header" onclick="toggleSection(this)">
+                            <span class="section-title">Período</span>
+                            <span class="section-toggle">▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label>Fecha inicio <span class="required">*</span></label>
+                                <input type="date" name="fecha_inicio" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Fecha fin <span class="required">*</span></label>
+                                <input type="date" name="fecha_finalizacion" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos (ancho completo) -->
+                <div class="products-container">
+                    <div class="products-title">Productos y Cantidades</div>
+                    
+                    <div class="products-grid">
+                        <!-- Sculptra -->
+                        <div class="product-section">
+                            <div class="product-title">Sculptra</div>
+                            <div class="form-group">
+                                <label>Unidades</label>
+                                <input type="number" id="sculptra_unidades" name="sculptra_unidades" 
+                                       oninput="actualizarDescuento('sculptra')" min="0" 
+                                       placeholder="Cantidad" value="0">
+                                <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
+                                <div id="sculptra_descuento_display" class="descuento-display" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Skinboosters -->
+                        <div class="product-section">
+                            <div class="product-title">Skinboosters</div>
+                            <div class="form-group">
+                                <label>Unidades</label>
+                                <input type="number" id="skinboosters_unidades" name="skinboosters_unidades" 
+                                       oninput="actualizarDescuento('skinboosters')" min="0"
+                                       placeholder="Cantidad" value="0">
+                                <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
+                                <div id="skinboosters_descuento_display" class="descuento-display" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Restylane -->
+                        <div class="product-section">
+                            <div class="product-title">Restylane</div>
+                            <div class="form-group">
+                                <label>Unidades</label>
+                                <input type="number" id="restylane_unidades" name="restylane_unidades" 
+                                       oninput="actualizarDescuento('restylane')" min="0"
+                                       placeholder="Cantidad" value="0">
+                                <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
+                                <div id="restylane_descuento_display" class="descuento-display" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cross-selling -->
+                    <div class="checkbox-container">
+                        <label>
+                            <input type="checkbox" name="cross_selling">
+                            Aplicar descuento adicional por cross-selling (3%)
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-button" id="submitBtn">
+                    Generar y Descargar PDF
+                </button>
+                
+                <div class="loading" id="loading">
+                    <p>Generando PDF, por favor espere...</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Galderma. Advanced Dermatology Solutions.</p>
+    </footer>
+
+    <script>
+        // Reglas de descuento
+        const reglas = {
+            sculptra: [
+                {min: 2, max: 10, descuento: 34},
+                {min: 11, max: 21, descuento: 37},
+                {min: 22, max: 35, descuento: 39},
+                {min: 36, max: 55, descuento: 40},
+                {min: 56, max: Infinity, descuento: 44}
+            ],
+            restylane: [
+                {min: 2, max: 10, descuento: 32},
+                {min: 11, max: 21, descuento: 34},
+                {min: 22, max: 35, descuento: 40},
+                {min: 36, max: 55, descuento: 44},
+                {min: 56, max: Infinity, descuento: 48}
+            ],
+            skinboosters: [
+                {min: 2, max: 10, descuento: 32},
+                {min: 11, max: 21, descuento: 34},
+                {min: 22, max: 35, descuento: 40},
+                {min: 36, max: 55, descuento: 44},
+                {min: 56, max: Infinity, descuento: 48}
+            ]
+        };
+
+        // Detectar si es móvil
+        const isMobile = window.innerWidth <= 768;
+
+        // Toggle secciones (solo móvil)
+        function toggleSection(header) {
+            if (!isMobile) return; // No funciona en desktop
+            
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.section-toggle');
+            
+            if (content && toggle) {
+                content.classList.toggle('collapsed');
+                header.classList.toggle('active');
+            }
+        }
+
+        // Actualizar descuentos
+        function actualizarDescuento(producto) {
+            const unidades = parseInt(document.getElementById(`${producto}_unidades`).value) || 0;
+            const descuentoDisplay = document.getElementById(`${producto}_descuento_display`);
+            
+            if (!unidades || unidades < 2) {
+                descuentoDisplay.style.display = 'none';
+                return;
+            }
+
+            const regla = reglas[producto].find(r => unidades >= r.min && unidades <= r.max);
+            if (regla) {
+                descuentoDisplay.innerHTML = `Descuento: ${regla.descuento}%`;
+                descuentoDisplay.style.display = 'block';
+            } else {
+                descuentoDisplay.style.display = 'none';
+            }
+        }
+
+        // Validación del formulario
+        document.getElementById('proposalForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            
+            const campos = [
+                {name: 'representante', label: 'Representante'},
+                {name: 'cliente', label: 'Cliente'},
+                {name: 'fecha_inicio', label: 'Fecha de inicio'},
+                {name: 'fecha_finalizacion', label: 'Fecha de finalización'}
+            ];
+
+            let errores = [];
+
+            // Limpiar errores previos
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+                const errorMsg = group.querySelector('.error-message');
+                if (errorMsg) errorMsg.remove();
+            });
+
+            // Validar campos obligatorios
+            campos.forEach(campo => {
+                const input = document.querySelector(`input[name="${campo.name}"]`);
+                if (!input.value.trim()) {
+                    const formGroup = input.closest('.form-group');
+                    formGroup.classList.add('error');
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = `${campo.label} es obligatorio`;
+                    formGroup.appendChild(errorDiv);
+                    errores.push(campo.label);
+                }
+            });
+
+            // Validar fechas
+            const fechaInicio = document.querySelector('input[name="fecha_inicio"]').value;
+            const fechaFin = document.querySelector('input[name="fecha_finalizacion"]').value;
+
+            if (fechaInicio && fechaFin && new Date(fechaFin) <= new Date(fechaInicio)) {
+                const formGroup = document.querySelector('input[name="fecha_finalizacion"]').closest('.form-group');
+                formGroup.classList.add('error');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'La fecha fin debe ser posterior al inicio';
+                formGroup.appendChild(errorDiv);
+                errores.push('Fechas');
+            }
+
+            // Validar productos
+            const sculptra = parseInt(document.getElementById('sculptra_unidades').value) || 0;
+            const restylane = parseInt(document.getElementById('restylane_unidades').value) || 0;
+            const skinboosters = parseInt(document.getElementById('skinboosters_unidades').value) || 0;
+
+            if (sculptra + restylane + skinboosters === 0) {
+                alert('Debe ingresar al menos una unidad de algún producto.');
+                errores.push('Productos');
+            }
+
+            if (errores.length > 0) {
+                e.preventDefault();
+                const firstError = document.querySelector('.form-group.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Mostrar estado de carga
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Generando PDF...';
+                loading.style.display = 'block';
+            }
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // En móvil, colapsar secciones inicialmente excepto la primera
+            if (isMobile) {
+                const sections = document.querySelectorAll('.section-content');
+                sections.forEach((section, index) => {
+                    if (index > 0) {
+                        section.classList.add('collapsed');
+                    }
+                });
+            }
+        });
+
+        // Reajustar en cambio de orientación
+        window.addEventListener('resize', function() {
+            location.reload(); // Simple pero efectivo
+        });
+    </script>
+</body>
+</html>
