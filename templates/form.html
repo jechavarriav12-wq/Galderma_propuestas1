@@ -551,8 +551,8 @@
                             <div class="form-group">
                                 <label>Unidades</label>
                                 <input type="number" id="sculptra_unidades" name="sculptra_unidades" 
-                                       oninput="actualizarDescuento('sculptra')" min="0" 
-                                       placeholder="Cantidad" value="0">
+                                       oninput="actualizarDescuento('sculptra')" min="2" 
+                                       placeholder="Mínimo 2 unidades" value="0">
                                 <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
                                 <div id="sculptra_descuento_display" class="descuento-display" style="display: none;"></div>
                             </div>
@@ -564,8 +564,8 @@
                             <div class="form-group">
                                 <label>Unidades</label>
                                 <input type="number" id="skinboosters_unidades" name="skinboosters_unidades" 
-                                       oninput="actualizarDescuento('skinboosters')" min="0"
-                                       placeholder="Cantidad" value="0">
+                                       oninput="actualizarDescuento('skinboosters')" min="2"
+                                       placeholder="Mínimo 2 unidades" value="0">
                                 <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
                                 <div id="skinboosters_descuento_display" class="descuento-display" style="display: none;"></div>
                             </div>
@@ -577,20 +577,23 @@
                             <div class="form-group">
                                 <label>Unidades</label>
                                 <input type="number" id="restylane_unidades" name="restylane_unidades" 
-                                       oninput="actualizarDescuento('restylane')" min="0"
-                                       placeholder="Cantidad" value="0">
+                                       oninput="actualizarDescuento('restylane')" min="2"
+                                       placeholder="Mínimo 2 unidades" value="0">
                                 <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
                                 <div id="restylane_descuento_display" class="descuento-display" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Cross-selling -->
+                    <!-- Cross-selling informativo -->
                     <div class="checkbox-container">
                         <label>
-                            <input type="checkbox" name="cross_selling">
-                            Aplicar descuento adicional por cross-selling (3%)
+                            <input type="checkbox" name="cross_selling" disabled>
+                            Cross-selling: Se aplicará automáticamente si hay compra en las 3 franquicias y Skinboosters ≥ 50% de la mayor (Sculptra/Restylane)
                         </label>
+                        <div id="cross_selling_status" style="margin-top: 10px; font-weight: bold; color: #666;">
+                            Estado: Se evaluará automáticamente
+                        </div>
                     </div>
                 </div>
 
@@ -652,22 +655,57 @@
             }
         }
 
-        // Actualizar descuentos
+        // Actualizar descuentos y cross-selling
         function actualizarDescuento(producto) {
             const unidades = parseInt(document.getElementById(`${producto}_unidades`).value) || 0;
             const descuentoDisplay = document.getElementById(`${producto}_descuento_display`);
             
             if (!unidades || unidades < 2) {
                 descuentoDisplay.style.display = 'none';
-                return;
-            }
-
-            const regla = reglas[producto].find(r => unidades >= r.min && unidades <= r.max);
-            if (regla) {
-                descuentoDisplay.innerHTML = `Descuento: ${regla.descuento}%`;
-                descuentoDisplay.style.display = 'block';
             } else {
-                descuentoDisplay.style.display = 'none';
+                const regla = reglas[producto].find(r => unidades >= r.min && unidades <= r.max);
+                if (regla) {
+                    descuentoDisplay.innerHTML = `Descuento: ${regla.descuento}%`;
+                    descuentoDisplay.style.display = 'block';
+                } else {
+                    descuentoDisplay.style.display = 'none';
+                }
+            }
+            
+            // Actualizar estado de cross-selling
+            actualizarCrossSelling();
+        }
+
+        function actualizarCrossSelling() {
+            const sculptra = parseInt(document.getElementById('sculptra_unidades').value) || 0;
+            const restylane = parseInt(document.getElementById('restylane_unidades').value) || 0;
+            const skinboosters = parseInt(document.getElementById('skinboosters_unidades').value) || 0;
+            
+            const statusElement = document.getElementById('cross_selling_status');
+            const checkboxElement = document.querySelector('input[name="cross_selling"]');
+            
+            // Verificar si aplica cross-selling
+            const tieneTresFranquicias = sculptra >= 2 && restylane >= 2 && skinboosters >= 2;
+            const franquiciaMayor = Math.max(sculptra, restylane);
+            const minimoSkinboosters = franquiciaMayor / 2;
+            const cumpleRatio = skinboosters >= minimoSkinboosters;
+            
+            if (tieneTresFranquicias && cumpleRatio) {
+                statusElement.innerHTML = 'Estado: ✅ Cross-selling APLICADO (3% descuento adicional)';
+                statusElement.style.color = '#28a745';
+                checkboxElement.checked = true;
+            } else if (tieneTresFranquicias && !cumpleRatio) {
+                statusElement.innerHTML = `Estado: ❌ Cross-selling NO aplicado - Skinboosters necesita mínimo ${Math.ceil(minimoSkinboosters)} unidades`;
+                statusElement.style.color = '#dc3545';
+                checkboxElement.checked = false;
+            } else if (!tieneTresFranquicias) {
+                statusElement.innerHTML = 'Estado: ❌ Cross-selling NO aplicado - Se necesita compra en las 3 franquicias (mín. 2 c/u)';
+                statusElement.style.color = '#dc3545';
+                checkboxElement.checked = false;
+            } else {
+                statusElement.innerHTML = 'Estado: Se evaluará automáticamente';
+                statusElement.style.color = '#666';
+                checkboxElement.checked = false;
             }
         }
 
@@ -727,8 +765,14 @@
             const skinboosters = parseInt(document.getElementById('skinboosters_unidades').value) || 0;
 
             if (sculptra + restylane + skinboosters === 0) {
-                alert('Debe ingresar al menos una unidad de algún producto.');
+                alert('Debe ingresar al menos un producto con mínimo 2 unidades.');
                 errores.push('Productos');
+            }
+
+            // Validar unidades mínimas
+            if ((sculptra > 0 && sculptra < 2) || (restylane > 0 && restylane < 2) || (skinboosters > 0 && skinboosters < 2)) {
+                alert('Todos los productos deben tener mínimo 2 unidades o estar en 0.');
+                errores.push('Unidades mínimas');
             }
 
             if (errores.length > 0) {
