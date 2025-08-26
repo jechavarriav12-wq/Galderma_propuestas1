@@ -311,6 +311,7 @@ def generar_pdf():
         # Obtener datos del formulario
         representante = request.form.get('representante', '')
         cliente = request.form.get('cliente', '')
+        codigo_cliente = request.form.get('codigo_cliente', '')
         fecha_inicio = request.form.get('fecha_inicio', '')
         fecha_finalizacion = request.form.get('fecha_finalizacion', '')
         
@@ -333,6 +334,7 @@ def generar_pdf():
         data = {
             'Representante': representante,
             'Cliente': cliente,
+            'Codigo_Cliente': codigo_cliente,
             'Sculptra Unidades': sculptra_unidades,
             'Sculptra Descuento': sculptra_descuento,
             'Skinboosters Unidades': skinboosters_unidades,
@@ -354,6 +356,7 @@ def generar_pdf():
         # Renderizar página de confirmación con datos para descarga
         return render_template('confirmacion.html', 
                              cliente=cliente,
+                             codigo_cliente=codigo_cliente,
                              representante=representante,
                              fecha_actual=fecha_actual,
                              filename=filename,
@@ -378,6 +381,7 @@ def descargar_pdf():
         data = {
             'Representante': request.form.get('representante', ''),
             'Cliente': request.form.get('cliente', ''),
+            'Codigo_Cliente': request.form.get('codigo_cliente', ''),
             'Sculptra Unidades': int(request.form.get('sculptra_unidades', 0)),
             'Sculptra Descuento': int(request.form.get('sculptra_descuento', 0)),
             'Skinboosters Unidades': int(request.form.get('skinboosters_unidades', 0)),
