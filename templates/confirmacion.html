@@ -264,6 +264,12 @@
                     <span class="detail-label">Cliente:</span>
                     <span class="detail-value">Dr(a). {{ cliente }}</span>
                 </div>
+                {% if codigo_cliente %}
+                <div class="detail-item">
+                    <span class="detail-label">Código Cliente:</span>
+                    <span class="detail-value">{{ codigo_cliente }}</span>
+                </div>
+                {% endif %}
                 <div class="detail-item">
                     <span class="detail-label">Representante:</span>
                     <span class="detail-value">{{ representante }}</span>
@@ -306,6 +312,7 @@
                 <!-- Datos ocultos para regenerar el PDF -->
                 <input type="hidden" name="representante" value="{{ representante }}">
                 <input type="hidden" name="cliente" value="{{ cliente }}">
+                <input type="hidden" name="codigo_cliente" value="{{ codigo_cliente }}">
                 <input type="hidden" name="sculptra_unidades" value="{{ productos.sculptra }}">
                 <input type="hidden" name="restylane_unidades" value="{{ productos.restylane }}">
                 <input type="hidden" name="skinboosters_unidades" value="{{ productos.skinboosters }}">
