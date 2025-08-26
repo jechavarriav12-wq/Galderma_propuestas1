@@ -499,8 +499,23 @@
                         <div class="section-content">
                             <div class="form-group">
                                 <label>Cliente <span class="required">*</span></label>
-                                <input type="text" name="Razón Social" required 
-                                       placeholder="Razón Social Completa">
+                                <input type="text" name="cliente" required 
+                                       placeholder="Dr(a). Nombre completo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Código del cliente -->
+                    <div class="form-section">
+                        <div class="section-header" onclick="toggleSection(this)">
+                            <span class="section-title">Código Cliente</span>
+                            <span class="section-toggle">▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label>Código del Cliente <span class="required">*</span></label>
+                                <input type="text" name="codigo_cliente" required
+                                       placeholder="Código único del cliente">
                             </div>
                         </div>
                     </div>
@@ -664,6 +679,7 @@
             const campos = [
                 {name: 'representante', label: 'Representante'},
                 {name: 'cliente', label: 'Cliente'},
+                {name: 'codigo_cliente', label: 'Código del Cliente'},
                 {name: 'fecha_inicio', label: 'Fecha de inicio'},
                 {name: 'fecha_finalizacion', label: 'Fecha de finalización'}
             ];
