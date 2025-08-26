@@ -317,6 +317,8 @@
                 <input type="hidden" name="restylane_unidades" value="{{ productos.restylane }}">
                 <input type="hidden" name="skinboosters_unidades" value="{{ productos.skinboosters }}">
                 <input type="hidden" name="cross_selling" value="{{ cross_selling }}">
+                <input type="hidden" name="fecha_inicio" value="{{ request.form['fecha_inicio'] if request.form else '' }}">
+                <input type="hidden" name="fecha_finalizacion" value="{{ request.form['fecha_finalizacion'] if request.form else '' }}">
                 <input type="hidden" name="filename" value="{{ filename }}">
                 
                 <button type="submit" class="download-btn">
