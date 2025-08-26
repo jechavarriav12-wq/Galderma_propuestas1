@@ -5,14 +5,9 @@ from reportlab.pdfgen import canvas
 from datetime import datetime
 import tempfile
 import io
-import pandas as pd
-import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_temporal_123')
-
-# Archivo Excel para registro
-EXCEL_FILE = 'negociaciones.xlsx'
 
 def validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades):
     """
@@ -31,60 +26,6 @@ def validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_un
     minimo_skinboosters = franquicia_mayor / 2
     
     return skinboosters_unidades >= minimo_skinboosters
-    """Inicializa el archivo Excel si no existe"""
-    if not os.path.exists(EXCEL_FILE):
-        df = pd.DataFrame(columns=[
-            'ID', 'Fecha', 'Cliente', 'Codigo_Cliente', 'Representante',
-            'Sculptra_Unidades', 'Sculptra_Descuento',
-            'Restylane_Unidades', 'Restylane_Descuento',
-            'Skinboosters_Unidades', 'Skinboosters_Descuento',
-            'Cross_Selling', 'Fecha_Inicio', 'Fecha_Finalizacion',
-            'PDF_Generado'
-        ])
-        df.to_excel(EXCEL_FILE, index=False)
-
-def registrar_negociacion(data):
-    """Registra una nueva negociación en Excel"""
-    try:
-        inicializar_excel()
-        
-        # Crear ID único
-        negociacion_id = str(uuid.uuid4())[:8]
-        
-        nueva_fila = {
-            'ID': negociacion_id,
-            'Fecha': datetime.now().strftime('%d/%m/%Y %H:%M'),
-            'Cliente': data.get('Cliente', ''),
-            'Codigo_Cliente': data.get('Codigo_Cliente', ''),
-            'Representante': data.get('Representante', ''),
-            'Sculptra_Unidades': data.get('Sculptra Unidades', 0),
-            'Sculptra_Descuento': data.get('Sculptra Descuento', 0),
-            'Restylane_Unidades': data.get('Restylane Unidades', 0),
-            'Restylane_Descuento': data.get('Restylane Descuento', 0),
-            'Skinboosters_Unidades': data.get('Skinboosters Unidades', 0),
-            'Skinboosters_Descuento': data.get('Skinboosters Descuento', 0),
-            'Cross_Selling': data.get('Cross-selling', 'No'),
-            'Fecha_Inicio': data.get('Fecha inicio', ''),
-            'Fecha_Finalizacion': data.get('Fecha finalizacion', ''),
-            'PDF_Generado': 'Sí'
-        }
-        
-        # Leer Excel existente
-        df_existente = pd.read_excel(EXCEL_FILE)
-        
-        # Agregar nueva fila
-        df_nueva = pd.DataFrame([nueva_fila])
-        df_final = pd.concat([df_existente, df_nueva], ignore_index=True)
-        
-        # Guardar Excel actualizado
-        df_final.to_excel(EXCEL_FILE, index=False)
-        
-        print(f"Negociación registrada: {negociacion_id}")
-        return negociacion_id
-        
-    except Exception as e:
-        print(f"Error registrando negociación: {e}")
-        return None
 
 def calcular_descuento(producto, unidades):
     """Calcula el descuento basado en el producto y la cantidad de unidades"""
@@ -436,9 +377,6 @@ def generar_pdf():
         # Generar PDF en memoria
         pdf_buffer = generar_carta_pdf(data)
         
-        # Registrar negociación en Excel
-        negociacion_id = registrar_negociacion(data)
-        
         # Guardar PDF temporalmente para la descarga
         filename = f"Propuesta_Galderma_{cliente}_{datetime.today().strftime('%Y%m%d')}.pdf"
         
@@ -521,49 +459,10 @@ def descargar_pdf():
         return render_template('error.html', 
                              error=f"Error descargando PDF: {str(e)}"), 500
 
-@app.route('/descargar-excel')
-def descargar_excel():
-    """Descargar Excel con todas las negociaciones"""
-    try:
-        if not os.path.exists(EXCEL_FILE):
-            inicializar_excel()
-        
-        return send_file(
-            EXCEL_FILE,
-            as_attachment=True,
-            download_name=f'negociaciones_galderma_{datetime.today().strftime("%Y%m%d")}.xlsx',
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-    except Exception as e:
-        return jsonify({"error": f"Error descargando Excel: {str(e)}"}), 500
-
-@app.route('/estadisticas')
-def ver_estadisticas():
-    """Ver estadísticas básicas de negociaciones"""
-    try:
-        if not os.path.exists(EXCEL_FILE):
-            return jsonify({
-                "total_negociaciones": 0,
-                "mensaje": "No hay negociaciones registradas"
-            })
-        
-        df = pd.read_excel(EXCEL_FILE)
-        
-        estadisticas = {
-            "total_negociaciones": len(df),
-            "representantes_activos": df['Representante'].nunique(),
-            "productos_mas_vendidos": {
-                "sculptra": df['Sculptra_Unidades'].sum(),
-                "restylane": df['Restylane_Unidades'].sum(),
-                "skinboosters": df['Skinboosters_Unidades'].sum()
-            },
-            "cross_selling_rate": f"{(df['Cross_Selling'] == 'Sí').mean() * 100:.1f}%"
-        }
-        
-        return jsonify(estadisticas)
-        
-    except Exception as e:
-        return jsonify({"error": f"Error generando estadísticas: {str(e)}"}), 500
+@app.route('/health')
+def health():
+    """Endpoint de salud para Render"""
+    return jsonify({"status": "OK", "message": "App funcionando correctamente"})
 
 if __name__ == '__main__':
     # Para desarrollo local
