@@ -378,19 +378,38 @@ def descargar_pdf():
         # Recrear el PDF con los mismos datos del formulario
         fecha_actual = datetime.today().strftime('%d/%m/%Y')
         
+        # Obtener datos del formulario
+        representante = request.form.get('representante', '')
+        cliente = request.form.get('cliente', '')
+        codigo_cliente = request.form.get('codigo_cliente', '')
+        fecha_inicio = request.form.get('fecha_inicio', '')
+        fecha_finalizacion = request.form.get('fecha_finalizacion', '')
+        
+        # Obtener unidades y RECALCULAR descuentos
+        sculptra_unidades = int(request.form.get('sculptra_unidades', 0))
+        restylane_unidades = int(request.form.get('restylane_unidades', 0))
+        skinboosters_unidades = int(request.form.get('skinboosters_unidades', 0))
+        
+        # RECALCULAR los descuentos (esta es la corrección principal)
+        sculptra_descuento = calcular_descuento_porcentaje('sculptra', sculptra_unidades)
+        restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
+        skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
+        
+        cross_selling = request.form.get('cross_selling', 'No')
+        
         data = {
-            'Representante': request.form.get('representante', ''),
-            'Cliente': request.form.get('cliente', ''),
-            'Codigo_Cliente': request.form.get('codigo_cliente', ''),
-            'Sculptra Unidades': int(request.form.get('sculptra_unidades', 0)),
-            'Sculptra Descuento': int(request.form.get('sculptra_descuento', 0)),
-            'Skinboosters Unidades': int(request.form.get('skinboosters_unidades', 0)),
-            'Skinboosters Descuento': int(request.form.get('skinboosters_descuento', 0)),
-            'Restylane Unidades': int(request.form.get('restylane_unidades', 0)),
-            'Restylane Descuento': int(request.form.get('restylane_descuento', 0)),
-            'Cross-selling': request.form.get('cross_selling', 'No'),
-            'Fecha inicio': request.form.get('fecha_inicio', ''),
-            'Fecha finalizacion': request.form.get('fecha_finalizacion', ''),
+            'Representante': representante,
+            'Cliente': cliente,
+            'Codigo_Cliente': codigo_cliente,
+            'Sculptra Unidades': sculptra_unidades,
+            'Sculptra Descuento': sculptra_descuento,  # Ahora usa el descuento calculado
+            'Skinboosters Unidades': skinboosters_unidades,
+            'Skinboosters Descuento': skinboosters_descuento,  # Ahora usa el descuento calculado
+            'Restylane Unidades': restylane_unidades,
+            'Restylane Descuento': restylane_descuento,  # Ahora usa el descuento calculado
+            'Cross-selling': cross_selling,
+            'Fecha inicio': fecha_inicio,
+            'Fecha finalizacion': fecha_finalizacion,
             'Fecha actual': fecha_actual
         }
 
