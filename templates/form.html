@@ -585,14 +585,14 @@
                         </div>
                     </div>
 
-                    <!-- Cross-selling informativo -->
+                    <!-- Cross-selling opcional -->
                     <div class="checkbox-container">
                         <label>
-                            <input type="checkbox" name="cross_selling" disabled>
-                            Cross-selling: Se aplicará automáticamente si hay compra en las 3 franquicias y Skinboosters ≥ 50% de la mayor (Sculptra/Restylane)
+                            <input type="checkbox" name="cross_selling" id="cross_selling_checkbox" onchange="actualizarCrossSelling()">
+                            Solicitar cross-selling (3% descuento adicional si se cumplen las condiciones)
                         </label>
                         <div id="cross_selling_status" style="margin-top: 10px; font-weight: bold; color: #666;">
-                            Estado: Se evaluará automáticamente
+                            Estado: No solicitado
                         </div>
                     </div>
                 </div>
@@ -682,30 +682,29 @@
             const skinboosters = parseInt(document.getElementById('skinboosters_unidades').value) || 0;
             
             const statusElement = document.getElementById('cross_selling_status');
-            const checkboxElement = document.querySelector('input[name="cross_selling"]');
+            const checkboxElement = document.getElementById('cross_selling_checkbox');
             
-            // Verificar si aplica cross-selling
+            if (!checkboxElement.checked) {
+                statusElement.innerHTML = 'Estado: No solicitado';
+                statusElement.style.color = '#666';
+                return;
+            }
+            
+            // Si está marcado, verificar si cumple las reglas
             const tieneTresFranquicias = sculptra >= 2 && restylane >= 2 && skinboosters >= 2;
             const franquiciaMayor = Math.max(sculptra, restylane);
             const minimoSkinboosters = franquiciaMayor / 2;
             const cumpleRatio = skinboosters >= minimoSkinboosters;
             
-            if (tieneTresFranquicias && cumpleRatio) {
-                statusElement.innerHTML = 'Estado: ✅ Cross-selling APLICADO (3% descuento adicional)';
-                statusElement.style.color = '#28a745';
-                checkboxElement.checked = true;
-            } else if (tieneTresFranquicias && !cumpleRatio) {
-                statusElement.innerHTML = `Estado: ❌ Cross-selling NO aplicado - Skinboosters necesita mínimo ${Math.ceil(minimoSkinboosters)} unidades`;
+            if (!tieneTresFranquicias) {
+                statusElement.innerHTML = 'Estado: ❌ NO aplicará - Se necesita compra en las 3 franquicias (mín. 2 c/u)';
                 statusElement.style.color = '#dc3545';
-                checkboxElement.checked = false;
-            } else if (!tieneTresFranquicias) {
-                statusElement.innerHTML = 'Estado: ❌ Cross-selling NO aplicado - Se necesita compra en las 3 franquicias (mín. 2 c/u)';
+            } else if (!cumpleRatio) {
+                statusElement.innerHTML = `Estado: ❌ NO aplicará - Skinboosters necesita mínimo ${Math.ceil(minimoSkinboosters)} unidades`;
                 statusElement.style.color = '#dc3545';
-                checkboxElement.checked = false;
             } else {
-                statusElement.innerHTML = 'Estado: Se evaluará automáticamente';
-                statusElement.style.color = '#666';
-                checkboxElement.checked = false;
+                statusElement.innerHTML = 'Estado: ✅ SÍ aplicará (3% descuento adicional)';
+                statusElement.style.color = '#28a745';
             }
         }
 
