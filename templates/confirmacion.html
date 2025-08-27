@@ -292,10 +292,16 @@
                         <span><strong>{{ productos.sculptra }} unidades</strong></span>
                     </div>
                 {% endif %}
-                {% if productos.restylane > 0 %}
+                {% if productos.restylane_gold > 0 %}
                     <div class="producto-item">
-                        <span>Restylane</span>
-                        <span><strong>{{ productos.restylane }} unidades</strong></span>
+                        <span>Restylane Gold</span>
+                        <span><strong>{{ productos.restylane_gold }} unidades</strong></span>
+                    </div>
+                {% endif %}
+                {% if productos.restylane_diamond > 0 %}
+                    <div class="producto-item">
+                        <span>Restylane Diamond</span>
+                        <span><strong>{{ productos.restylane_diamond }} unidades</strong></span>
                     </div>
                 {% endif %}
                 {% if productos.skinboosters > 0 %}
@@ -314,7 +320,8 @@
                 <input type="hidden" name="cliente" value="{{ cliente }}">
                 <input type="hidden" name="codigo_cliente" value="{{ codigo_cliente }}">
                 <input type="hidden" name="sculptra_unidades" value="{{ productos.sculptra }}">
-                <input type="hidden" name="restylane_unidades" value="{{ productos.restylane }}">
+                <input type="hidden" name="restylane_gold_unidades" value="{{ productos.restylane_gold }}">
+                <input type="hidden" name="restylane_diamond_unidades" value="{{ productos.restylane_diamond }}">
                 <input type="hidden" name="skinboosters_unidades" value="{{ productos.skinboosters }}">
                 <input type="hidden" name="cross_selling" value="{{ cross_selling }}">
                 <input type="hidden" name="fecha_inicio" value="{{ request.form['fecha_inicio'] if request.form else '' }}">
