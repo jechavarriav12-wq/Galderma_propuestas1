@@ -383,10 +383,12 @@ def generar_pdf():
             'Codigo_Cliente': codigo_cliente,
             'Sculptra Unidades': sculptra_unidades,
             'Sculptra Descuento': sculptra_descuento,
+            'Restylane Gold Unidades': restylane_gold_unidades,
+            'Restylane Gold Descuento': restylane_gold_descuento,
+            'Restylane Diamond Unidades': restylane_diamond_unidades,
+            'Restylane Diamond Descuento': restylane_diamond_descuento,
             'Skinboosters Unidades': skinboosters_unidades,
             'Skinboosters Descuento': skinboosters_descuento,
-            'Restylane Unidades': restylane_unidades,
-            'Restylane Descuento': restylane_descuento,
             'Cross-selling': cross_selling,
             'Fecha inicio': fecha_inicio,
             'Fecha finalizacion': fecha_finalizacion,
@@ -433,15 +435,23 @@ def descargar_pdf():
         
         # Obtener unidades y RECALCULAR descuentos
         sculptra_unidades = int(request.form.get('sculptra_unidades', 0))
-        restylane_unidades = int(request.form.get('restylane_unidades', 0))
+        restylane_gold_unidades = int(request.form.get('restylane_gold_unidades', 0))
+        restylane_diamond_unidades = int(request.form.get('restylane_diamond_unidades', 0))
         skinboosters_unidades = int(request.form.get('skinboosters_unidades', 0))
         
         # RECALCULAR los descuentos
         sculptra_descuento = calcular_descuento_porcentaje('sculptra', sculptra_unidades)
-        restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
+        restylane_gold_descuento = calcular_descuento_porcentaje('restylane_gold', restylane_gold_unidades)
+        restylane_diamond_descuento = calcular_descuento_porcentaje('restylane_diamond', restylane_diamond_unidades)
         skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
         
         # Cross-selling: solo si el usuario marcó la casilla Y cumple las reglas
+        cross_selling_solicitado = request.form.get('cross_selling') == 'Sí'
+        if cross_selling_solicitado:
+            cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_gold_unidades, restylane_diamond_unidades, skinboosters_unidades)
+            cross_selling = 'Sí' if cross_selling_aplica else 'No'
+        else:
+            cross_selling = 'No' el usuario marcó la casilla Y cumple las reglas
         cross_selling_solicitado = request.form.get('cross_selling') == 'Sí'
         if cross_selling_solicitado:
             cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
@@ -454,11 +464,13 @@ def descargar_pdf():
             'Cliente': cliente,
             'Codigo_Cliente': codigo_cliente,
             'Sculptra Unidades': sculptra_unidades,
-            'Sculptra Descuento': sculptra_descuento,  # Ahora usa el descuento calculado
+            'Sculptra Descuento': sculptra_descuento,
+            'Restylane Gold Unidades': restylane_gold_unidades,
+            'Restylane Gold Descuento': restylane_gold_descuento,
+            'Restylane Diamond Unidades': restylane_diamond_unidades,
+            'Restylane Diamond Descuento': restylane_diamond_descuento,
             'Skinboosters Unidades': skinboosters_unidades,
-            'Skinboosters Descuento': skinboosters_descuento,  # Ahora usa el descuento calculado
-            'Restylane Unidades': restylane_unidades,
-            'Restylane Descuento': restylane_descuento,  # Ahora usa el descuento calculado
+            'Skinboosters Descuento': skinboosters_descuento,
             'Cross-selling': cross_selling,
             'Fecha inicio': fecha_inicio,
             'Fecha finalizacion': fecha_finalizacion,
@@ -496,5 +508,6 @@ else:
 
 # Para que Gunicorn funcione
 application = app
+
 
 
