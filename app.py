@@ -354,9 +354,13 @@ def generar_pdf():
         restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
         skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
         
-        # Determinar cross-selling automáticamente (ignorar checkbox)
-        cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
-        cross_selling = 'Sí' if cross_selling_aplica else 'No'
+        # Cross-selling: solo si el usuario marcó la casilla Y cumple las reglas
+        cross_selling_solicitado = request.form.get('cross_selling') is not None
+        if cross_selling_solicitado:
+            cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
+            cross_selling = 'Sí' if cross_selling_aplica else 'No'
+        else:
+            cross_selling = 'No'
 
         data = {
             'Representante': representante,
@@ -417,14 +421,18 @@ def descargar_pdf():
         restylane_unidades = int(request.form.get('restylane_unidades', 0))
         skinboosters_unidades = int(request.form.get('skinboosters_unidades', 0))
         
-        # RECALCULAR los descuentos (esta es la corrección principal)
+        # RECALCULAR los descuentos
         sculptra_descuento = calcular_descuento_porcentaje('sculptra', sculptra_unidades)
         restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
         skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
         
-        # Determinar cross-selling automáticamente
-        cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
-        cross_selling = 'Sí' if cross_selling_aplica else 'No'
+        # Cross-selling: solo si el usuario marcó la casilla Y cumple las reglas
+        cross_selling_solicitado = request.form.get('cross_selling') == 'Sí'
+        if cross_selling_solicitado:
+            cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
+            cross_selling = 'Sí' if cross_selling_aplica else 'No'
+        else:
+            cross_selling = 'No'
         
         data = {
             'Representante': representante,
@@ -473,4 +481,5 @@ else:
 
 # Para que Gunicorn funcione
 application = app
+
 
