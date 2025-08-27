@@ -410,7 +410,8 @@ def generar_pdf():
                              filename=filename,
                              productos={
                                  'sculptra': sculptra_unidades,
-                                 'restylane': restylane_unidades,
+                                 'restylane_gold': restylane_gold_unidades,
+                                 'restylane_diamond': restylane_diamond_unidades,
                                  'skinboosters': skinboosters_unidades
                              },
                              cross_selling=cross_selling)
@@ -449,12 +450,6 @@ def descargar_pdf():
         cross_selling_solicitado = request.form.get('cross_selling') == 'Sí'
         if cross_selling_solicitado:
             cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_gold_unidades, restylane_diamond_unidades, skinboosters_unidades)
-            cross_selling = 'Sí' if cross_selling_aplica else 'No'
-        else:
-            cross_selling = 'No' el usuario marcó la casilla Y cumple las reglas
-        cross_selling_solicitado = request.form.get('cross_selling') == 'Sí'
-        if cross_selling_solicitado:
-            cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
             cross_selling = 'Sí' if cross_selling_aplica else 'No'
         else:
             cross_selling = 'No'
@@ -508,6 +503,5 @@ else:
 
 # Para que Gunicorn funcione
 application = app
-
 
 
