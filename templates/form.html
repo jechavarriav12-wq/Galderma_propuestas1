@@ -571,16 +571,29 @@
                             </div>
                         </div>
 
-                        <!-- Restylane -->
+                        <!-- Restylane Gold -->
                         <div class="product-section">
-                            <div class="product-title">Restylane</div>
+                            <div class="product-title">Restylane Gold</div>
                             <div class="form-group">
                                 <label>Unidades</label>
-                                <input type="number" id="restylane_unidades" name="restylane_unidades" 
-                                       oninput="actualizarDescuento('restylane')" min="2"
+                                <input type="number" id="restylane_gold_unidades" name="restylane_gold_unidades" 
+                                       oninput="actualizarDescuento('restylane_gold')" min="2"
                                        placeholder="Mínimo 2 unidades" value="0">
                                 <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
-                                <div id="restylane_descuento_display" class="descuento-display" style="display: none;"></div>
+                                <div id="restylane_gold_descuento_display" class="descuento-display" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Restylane Diamond -->
+                        <div class="product-section">
+                            <div class="product-title">Restylane Diamond</div>
+                            <div class="form-group">
+                                <label>Unidades</label>
+                                <input type="number" id="restylane_diamond_unidades" name="restylane_diamond_unidades" 
+                                       oninput="actualizarDescuento('restylane_diamond')" min="2"
+                                       placeholder="Mínimo 2 unidades" value="0">
+                                <div class="descuento-info">Descuento automático según cantidad (mín. 2)</div>
+                                <div id="restylane_diamond_descuento_display" class="descuento-display" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -614,7 +627,7 @@
     </footer>
 
     <script>
-        // Reglas de descuento
+        // Reglas de descuento para todos los productos
         const reglas = {
             sculptra: [
                 {min: 2, max: 10, descuento: 34},
@@ -623,7 +636,14 @@
                 {min: 36, max: 55, descuento: 40},
                 {min: 56, max: Infinity, descuento: 44}
             ],
-            restylane: [
+            restylane_gold: [
+                {min: 2, max: 10, descuento: 32},
+                {min: 11, max: 21, descuento: 34},
+                {min: 22, max: 35, descuento: 40},
+                {min: 36, max: 55, descuento: 44},
+                {min: 56, max: Infinity, descuento: 48}
+            ],
+            restylane_diamond: [
                 {min: 2, max: 10, descuento: 32},
                 {min: 11, max: 21, descuento: 34},
                 {min: 22, max: 35, descuento: 40},
@@ -678,8 +698,11 @@
 
         function actualizarCrossSelling() {
             const sculptra = parseInt(document.getElementById('sculptra_unidades').value) || 0;
-            const restylane = parseInt(document.getElementById('restylane_unidades').value) || 0;
+            const restylane_gold = parseInt(document.getElementById('restylane_gold_unidades').value) || 0;
+            const restylane_diamond = parseInt(document.getElementById('restylane_diamond_unidades').value) || 0;
             const skinboosters = parseInt(document.getElementById('skinboosters_unidades').value) || 0;
+            
+            const restylane_total = restylane_gold + restylane_diamond;
             
             const statusElement = document.getElementById('cross_selling_status');
             const checkboxElement = document.getElementById('cross_selling_checkbox');
@@ -690,17 +713,17 @@
                 return;
             }
             
-            // Si está marcado, verificar si cumple las reglas
-            const tieneTresFranquicias = sculptra >= 2 && restylane >= 2 && skinboosters >= 2;
-            const franquiciaMayor = Math.max(sculptra, restylane);
+            // Si está marcado, verificar si cumple las reglas (3 franquicias: Sculptra, Restylane total, Skinboosters)
+            const tieneTresFranquicias = sculptra >= 2 && restylane_total >= 2 && skinboosters >= 2;
+            const franquiciaMayor = Math.max(sculptra, restylane_total);
             const minimoSkinboosters = franquiciaMayor / 2;
             const cumpleRatio = skinboosters >= minimoSkinboosters;
             
             if (!tieneTresFranquicias) {
-                statusElement.innerHTML = 'Estado: ❌ NO aplicará - Se necesita compra en las 3 franquicias (mín. 2 c/u)';
+                statusElement.innerHTML = 'Estado: ❌ NO aplicará - Se necesita compra en las 3 franquicias: Sculptra (mín. 2), Restylane total (mín. 2), Skinboosters (mín. 2)';
                 statusElement.style.color = '#dc3545';
             } else if (!cumpleRatio) {
-                statusElement.innerHTML = `Estado: ❌ NO aplicará - Skinboosters necesita mínimo ${Math.ceil(minimoSkinboosters)} unidades`;
+                statusElement.innerHTML = `Estado: ❌ NO aplicará - Skinboosters necesita mínimo ${Math.ceil(minimoSkinboosters)} unidades (50% de la franquicia mayor)`;
                 statusElement.style.color = '#dc3545';
             } else {
                 statusElement.innerHTML = 'Estado: ✅ SÍ aplicará (3% descuento adicional)';
@@ -760,16 +783,18 @@
 
             // Validar productos
             const sculptra = parseInt(document.getElementById('sculptra_unidades').value) || 0;
-            const restylane = parseInt(document.getElementById('restylane_unidades').value) || 0;
+            const restylane_gold = parseInt(document.getElementById('restylane_gold_unidades').value) || 0;
+            const restylane_diamond = parseInt(document.getElementById('restylane_diamond_unidades').value) || 0;
             const skinboosters = parseInt(document.getElementById('skinboosters_unidades').value) || 0;
 
-            if (sculptra + restylane + skinboosters === 0) {
+            if (sculptra + restylane_gold + restylane_diamond + skinboosters === 0) {
                 alert('Debe ingresar al menos un producto con mínimo 2 unidades.');
                 errores.push('Productos');
             }
 
             // Validar unidades mínimas
-            if ((sculptra > 0 && sculptra < 2) || (restylane > 0 && restylane < 2) || (skinboosters > 0 && skinboosters < 2)) {
+            if ((sculptra > 0 && sculptra < 2) || (restylane_gold > 0 && restylane_gold < 2) || 
+                (restylane_diamond > 0 && restylane_diamond < 2) || (skinboosters > 0 && skinboosters < 2)) {
                 alert('Todos los productos deben tener mínimo 2 unidades o estar en 0.');
                 errores.push('Unidades mínimas');
             }
