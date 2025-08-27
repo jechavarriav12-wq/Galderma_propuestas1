@@ -290,14 +290,14 @@ def generar_carta_pdf(data):
             'x': margin + col_width + 20,
             'y': y,
             'cargo': "Líder Comercial:",
-            'nombre': "____________________",
+            'nombre': "",
             'empresa': "Galderma"
         },
         {
             'x': margin + 20,
             'y': y - row_height,
             'cargo': "Analista Comercial:",
-            'nombre': "____________________",
+            'nombre': "",
             'empresa': "Galderma"
         },
         {
@@ -316,9 +316,16 @@ def generar_carta_pdf(data):
         name_y = label_y - 15
         org_y = name_y - 15
         
-        c.drawString(firma['x'], line_y, "_________________________")
+        # Dibujar línea de firma
+        c.line(firma['x'], line_y, firma['x'] + 180, line_y)
+        
+        # Dibujar textos
         c.drawString(firma['x'], label_y, firma['cargo'])
-        c.drawString(firma['x'], name_y, firma['nombre'])
+        
+        # Solo escribir nombre si no está vacío
+        if firma['nombre']:
+            c.drawString(firma['x'], name_y, firma['nombre'])
+        
         c.drawString(firma['x'], org_y, firma['empresa'])
 
     c.save()
