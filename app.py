@@ -9,18 +9,21 @@ import io
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'clave_temporal_123')
 
-def validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades):
+def validar_cross_selling(sculptra_unidades, restylane_gold_unidades, restylane_diamond_unidades, skinboosters_unidades):
     """
     Valida si aplica cross-selling según las reglas de negocio:
-    - Debe haber compra en las 3 franquicias
-    - Skinboosters debe ser al menos la mitad de la franquicia mayor (Sculptra o Restylane)
+    - Debe haber compra en las 3 franquicias (Sculptra, Restylane total, Skinboosters)
+    - Skinboosters debe ser al menos la mitad de la franquicia mayor (Sculptra o Restylane total)
     """
+    # Sumar las dos líneas de Restylane
+    restylane_total = restylane_gold_unidades + restylane_diamond_unidades
+    
     # Si alguna franquicia está en 0, no hay cross-selling
-    if sculptra_unidades == 0 or restylane_unidades == 0 or skinboosters_unidades == 0:
+    if sculptra_unidades == 0 or restylane_total == 0 or skinboosters_unidades == 0:
         return False
     
-    # Determinar la franquicia mayor entre Sculptra y Restylane
-    franquicia_mayor = max(sculptra_unidades, restylane_unidades)
+    # Determinar la franquicia mayor entre Sculptra y Restylane total
+    franquicia_mayor = max(sculptra_unidades, restylane_total)
     
     # Skinboosters debe ser al menos la mitad de la franquicia mayor
     minimo_skinboosters = franquicia_mayor / 2
@@ -37,7 +40,14 @@ def calcular_descuento(producto, unidades):
             {'min': 36, 'max': 55, 'descuento': 0.40},
             {'min': 56, 'max': float('inf'), 'descuento': 0.44}
         ],
-        'restylane': [
+        'restylane_gold': [
+            {'min': 2, 'max': 10, 'descuento': 0.32},
+            {'min': 11, 'max': 21, 'descuento': 0.34},
+            {'min': 22, 'max': 35, 'descuento': 0.40},
+            {'min': 36, 'max': 55, 'descuento': 0.44},
+            {'min': 56, 'max': float('inf'), 'descuento': 0.48}
+        ],
+        'restylane_diamond': [
             {'min': 2, 'max': 10, 'descuento': 0.32},
             {'min': 11, 'max': 21, 'descuento': 0.34},
             {'min': 22, 'max': 35, 'descuento': 0.40},
@@ -83,9 +93,10 @@ def generar_carta_pdf(data):
     line_height = 18
 
     PRECIOS_LISTA = {
-        'sculptra': 850000,
-        'restylane': 320000,
-        'skinboosters': 280000
+        'sculptra': 1487500,
+        'restylane_gold': 508666,
+        'restylane_diamond': 557694,
+        'skinboosters': 287385
     }
 
     IVA = 0.19
@@ -122,7 +133,8 @@ def generar_carta_pdf(data):
     productos_tabla = []
     productos_info = [
         ('sculptra', 'Sculptra', data['Sculptra Unidades'], data['Sculptra Descuento']),
-        ('restylane', 'Restylane', data['Restylane Unidades'], data['Restylane Descuento']),
+        ('restylane_gold', 'Restylane Gold', data['Restylane Gold Unidades'], data['Restylane Gold Descuento']),
+        ('restylane_diamond', 'Restylane Diamond', data['Restylane Diamond Unidades'], data['Restylane Diamond Descuento']),
         ('skinboosters', 'Skinboosters', data['Skinboosters Unidades'], data['Skinboosters Descuento'])
     ]
 
@@ -335,29 +347,32 @@ def generar_pdf():
         
         # Calcular descuentos
         sculptra_unidades = int(request.form.get('sculptra_unidades', 0) or 0)
-        restylane_unidades = int(request.form.get('restylane_unidades', 0) or 0)
+        restylane_gold_unidades = int(request.form.get('restylane_gold_unidades', 0) or 0)
+        restylane_diamond_unidades = int(request.form.get('restylane_diamond_unidades', 0) or 0)
         skinboosters_unidades = int(request.form.get('skinboosters_unidades', 0) or 0)
         
         # Validar unidades mínimas
         if (sculptra_unidades > 0 and sculptra_unidades < 2) or \
-           (restylane_unidades > 0 and restylane_unidades < 2) or \
+           (restylane_gold_unidades > 0 and restylane_gold_unidades < 2) or \
+           (restylane_diamond_unidades > 0 and restylane_diamond_unidades < 2) or \
            (skinboosters_unidades > 0 and skinboosters_unidades < 2):
             return render_template('error.html', 
                                  error="Todos los productos deben tener mínimo 2 unidades o estar en 0"), 400
 
         # Validar que hay al menos un producto con mínimo 2 unidades
-        if sculptra_unidades < 2 and restylane_unidades < 2 and skinboosters_unidades < 2:
+        if sculptra_unidades < 2 and restylane_gold_unidades < 2 and restylane_diamond_unidades < 2 and skinboosters_unidades < 2:
             return render_template('error.html', 
                                  error="Debe ingresar al menos un producto con mínimo 2 unidades"), 400
 
         sculptra_descuento = calcular_descuento_porcentaje('sculptra', sculptra_unidades)
-        restylane_descuento = calcular_descuento_porcentaje('restylane', restylane_unidades)
+        restylane_gold_descuento = calcular_descuento_porcentaje('restylane_gold', restylane_gold_unidades)
+        restylane_diamond_descuento = calcular_descuento_porcentaje('restylane_diamond', restylane_diamond_unidades)
         skinboosters_descuento = calcular_descuento_porcentaje('skinboosters', skinboosters_unidades)
         
         # Cross-selling: solo si el usuario marcó la casilla Y cumple las reglas
         cross_selling_solicitado = request.form.get('cross_selling') is not None
         if cross_selling_solicitado:
-            cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_unidades, skinboosters_unidades)
+            cross_selling_aplica = validar_cross_selling(sculptra_unidades, restylane_gold_unidades, restylane_diamond_unidades, skinboosters_unidades)
             cross_selling = 'Sí' if cross_selling_aplica else 'No'
         else:
             cross_selling = 'No'
